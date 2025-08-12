@@ -1,5 +1,5 @@
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +10,8 @@ from langchain_openai import ChatOpenAI
 from langchain.callbacks.base import BaseCallbackHandler, AsyncCallbackHandler
 import asyncio
 #import os
+from agent import get_captured_figures, clear_captured_figures
+from rag import get_rag_manager
 
 #load_dotenv("../.env")
 load_dotenv()
@@ -219,6 +221,31 @@ async def chat_stream(req: ChatRequest):
         yield "data: {\"type\": \"done\"}\n\n"
     
     return StreamingResponse(sse_generator(), media_type="text/event-stream")
+
+
+@app.post("/ingest")
+async def ingest_file(file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        text_content = content.decode('utf-8')
+
+        rag_manager = await get_rag_manager()
+        doc_id = await rag_manager.store_document(
+            content=text_content,
+            metadata={'source': file.filename},
+            source_type='file'
+        )
+
+        return JSONResponse(content={"message": f"File '{file.filename}' ingested successfully.", "doc_id": doc_id}, status_code=200)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
+@app.get("/figures")
+async def figures():
+    figures_json = get_captured_figures()
+    clear_captured_figures()
+    return JSONResponse(content={"figures": figures_json})
 
 
 if __name__ == "__main__":
