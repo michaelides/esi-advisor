@@ -3,8 +3,16 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_API;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Supabase URL and API Key are required. Please check your .env file.");
+let supabase = null;
+let isSupabaseConfigured = false;
+
+if (supabaseUrl && supabaseAnonKey) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    isSupabaseConfigured = true;
+  } catch (error) {
+    console.error("Error initializing Supabase:", error);
+  }
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export { supabase, isSupabaseConfigured };
