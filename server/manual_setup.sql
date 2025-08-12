@@ -64,3 +64,22 @@ $$;
 
 -- Test the setup
 SELECT 'RAG database setup completed successfully!' as status;
+
+-- Chat History Tables
+CREATE TABLE IF NOT EXISTS chats (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    title TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    chat_id UUID REFERENCES chats(id) ON DELETE CASCADE,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS chats_user_id_idx ON chats (user_id);
+CREATE INDEX IF NOT EXISTS messages_chat_id_idx ON messages (chat_id);
