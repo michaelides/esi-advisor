@@ -16,7 +16,7 @@ const MainPanel = ({ selectedChat, settings, setSettings, setArtifacts, setIsRig
   useEffect(() => {
     const fetchThinkingPhrases = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/thinking');
+        const response = await axios.get('/api/thinking');
         if (response.data.phrases && response.data.phrases.length > 0) {
             setThinkingPhrases(response.data.phrases);
         }
@@ -55,7 +55,7 @@ const MainPanel = ({ selectedChat, settings, setSettings, setArtifacts, setIsRig
   const processArtifacts = async (aiResponseContent) => {
     const codeArtifacts = extractCode(aiResponseContent);
 
-    const figuresResponse = await axios.get('http://localhost:8000/figures');
+    const figuresResponse = await axios.get('/api/figures');
     const plotArtifacts = figuresResponse.data.figures.map(figJson => ({
       type: 'plot',
       content: JSON.parse(figJson),
@@ -82,7 +82,7 @@ const MainPanel = ({ selectedChat, settings, setSettings, setArtifacts, setIsRig
     setIsRightPanelVisible(false);
     setArtifacts([]);
 
-    const eventSource = new EventSource(`http://localhost:8000/chat/stream?user_input=${encodeURIComponent(input)}&model=${settings.model}&temperature=${settings.temperature}&verbosity=${settings.verbosity}`);
+    const eventSource = new EventSource(`/api/chat/stream?user_input=${encodeURIComponent(input)}&model=${settings.model}&temperature=${settings.temperature}&verbosity=${settings.verbosity}`);
 
     let aiResponse = { role: 'ai', content: '' };
     setMessages(prevMessages => [...prevMessages, aiResponse]);

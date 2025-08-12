@@ -1,7 +1,7 @@
-import { supabase } from '../supabaseClient';
+import { supabase, isSupabaseConfigured } from '../supabaseClient';
 
 export const getChats = async (userId) => {
-  if (!userId) return [];
+  if (!isSupabaseConfigured || !userId) return [];
   const { data, error } = await supabase
     .from('chats')
     .select('id, title, created_at')
@@ -15,6 +15,7 @@ export const getChats = async (userId) => {
 };
 
 export const createChat = async (userId, title) => {
+  if (!isSupabaseConfigured) return null;
   const { data, error } = await supabase
     .from('chats')
     .insert([{ user_id: userId, title }])
@@ -27,7 +28,7 @@ export const createChat = async (userId, title) => {
 };
 
 export const getMessages = async (chatId) => {
-  if (!chatId) return [];
+  if (!isSupabaseConfigured || !chatId) return [];
   const { data, error } = await supabase
     .from('messages')
     .select('role, content')
@@ -41,6 +42,7 @@ export const getMessages = async (chatId) => {
 };
 
 export const saveMessage = async (chatId, role, content) => {
+  if (!isSupabaseConfigured) return;
   const { error } = await supabase
     .from('messages')
     .insert([{ chat_id: chatId, role, content }]);
@@ -50,7 +52,7 @@ export const saveMessage = async (chatId, role, content) => {
 };
 
 export const deleteAllChats = async (userId) => {
-    if (!userId) return;
+    if (!isSupabaseConfigured || !userId) return;
     const { error } = await supabase
         .from('chats')
         .delete()
@@ -65,7 +67,7 @@ export const ingestFile = async (file) => {
   formData.append('file', file);
 
   try {
-    const response = await fetch('http://localhost:8000/ingest', {
+    const response = await fetch('/api/ingest', {
       method: 'POST',
       body: formData,
     });
