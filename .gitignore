@@ -1,0 +1,7 @@
+.env
+server/.env
+.venv
+node_modules
+*.pdf
+source_data/*
+source_data/pdf/*
